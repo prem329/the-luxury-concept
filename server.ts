@@ -5,7 +5,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const db = new Database("luxury_concept.db");
+const dbPath = process.env.DB_PATH || "luxury_concept.db";
+const db = new Database(dbPath);
 
 // Initialize database
 db.exec(`
@@ -61,7 +62,7 @@ const columns = [
 columns.forEach(({ table, column, type }) => {
   try {
     db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`);
-  } catch (e) {}
+  } catch (e) { }
 });
 
 // Seed initial data if empty
@@ -182,11 +183,11 @@ async function startServer() {
 
   app.post("/api/orders", (req, res) => {
     const { customer_name, customer_email, customer_phone, customer_address, items, total_amount } = req.body;
-    
+
     const transaction = db.transaction(() => {
       const info = db.prepare("INSERT INTO orders (customer_name, customer_email, customer_phone, customer_address, total_amount) VALUES (?, ?, ?, ?, ?)").run(customer_name, customer_email, customer_phone, customer_address, total_amount);
       const orderId = info.lastInsertRowid;
-      
+
       const insertItem = db.prepare("INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)");
       for (const item of items) {
         insertItem.run(orderId, item.id, item.quantity, item.price);

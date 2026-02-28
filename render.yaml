@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: the-luxury-concept
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_PATH
+        value: /data/luxury_concept.db
+      - key: GEMINI_API_KEY
+        sync: false
+    disk:
+      name: data
+      mountPath: /data
+      sizeGB: 1
